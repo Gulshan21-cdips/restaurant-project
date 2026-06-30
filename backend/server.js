@@ -28,11 +28,12 @@ app.use(express.static(publicPath));
 app.use('/uploads', express.static(uploadPath));
 
 // --- DATABASE CONNECTION ---
+// --- DATABASE CONNECTION (Cloud Ready) ---
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'luxedining_db',
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'luxedining_db',
     multipleStatements: true 
 });
 
@@ -505,4 +506,8 @@ app.get('/:page', (req, res) => {
     return res.sendFile(fs.existsSync(filePath) ? filePath : path.join(publicPath, 'index.html'));
 });
 
+app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
+// purana: app.listen(PORT, ...
+// naya:
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
