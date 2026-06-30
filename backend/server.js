@@ -28,17 +28,20 @@ app.use(express.static(publicPath));
 app.use('/uploads', express.static(uploadPath));
 
 // --- DATABASE CONNECTION ---
-// --- DATABASE CONNECTION (Cloud Ready) ---
-// --- DATABASE CONNECTION ---
+// Database connection ko thoda handle karte hain
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT || 3306,
-    multipleStatements: true 
+    multipleStatements: true
 });
 
+// Ye check karne ke liye ki variables load huye ya nahi
+if (!process.env.DB_HOST) {
+    console.error("⚠️ WARNING: DB_HOST is missing in environment variables!");
+}
 db.connect(err => {
     if (err) {
         console.error("❌ DB CONNECTION FAILED: " + err.message);
