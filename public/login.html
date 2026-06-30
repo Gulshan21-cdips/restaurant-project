@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxe Dining | Login</title>
+    <style>
+        body { 
+            background: #000; 
+            color: gold; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .login-card { 
+            background: #111; 
+            padding: 40px; 
+            border-radius: 15px; 
+            border: 1px solid #333; 
+            width: 350px; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.05);
+            box-sizing: border-box;
+        }
+        h2 {
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            font-size: 1.6rem;
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            background: #222; 
+            border: 1px solid #444; 
+            color: white; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            outline: none;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+        input:focus {
+            border-color: gold;
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: gold; 
+            color: black; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #f1c40f;
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .back-link {
+            margin-top: 25px;
+            display: block;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .back-link:hover {
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2 id="loginTitle">ADMIN PORTAL LOGIN</h2>
+        
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required autocomplete="username">
+            <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+            <button type="submit" id="submitBtn">ENTER SYSTEM</button>
+        </form>
+
+        <p id="errMsg" style="color: #ff4d4d; margin-top: 15px; font-size: 14px; min-height: 20px;"></p>
+        
+        <a href="index.html" class="back-link">← Return to Homepage</a>
+    </div>
+
+    <script>
+        // Chef context removed completely. Default is strictly locked to manager authentication flow.
+        const currentType = 'manager'; 
+
+        document.getElementById('loginForm').onsubmit = function(e) {
+            e.preventDefault();
+            
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value;
+            const errMsg = document.getElementById('errMsg');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Clear previous error messages
+            errMsg.innerText = "";
+            
+            // UI Feedback State Change
+            submitBtn.innerText = "VERIFYING...";
+            submitBtn.disabled = true;
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass, loginType: currentType })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Network authentication channel refused configuration.");
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Redirect path coming from master server routing context
+                    window.location.href = data.redirect || 'manager.html';
+                } else {
+                    errMsg.innerText = data.message || "Invalid administrative credentials.";
+                    submitBtn.innerText = "ENTER SYSTEM";
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error("Authentication Exception Stack:", err);
+                errMsg.innerText = "System Interface Offline. Check backend server connection.";
+                submitBtn.innerText = "ENTER SYSTEM";
+                submitBtn.disabled = false;
+            });
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuxeDining | Premium Cafe Experience</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
+    <style>
+        /* --- CORE RESPONSIVE FLEX GRIDS --- */
+        .gallery-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; padding: 20px; }
+        .gallery-wrapper { position: relative; width: 300px; height: 200px; overflow: hidden; border-radius: 10px; border: 2px solid gold; }
+        .gal-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+        .gallery-wrapper:hover .gal-img { transform: scale(1.05); }
+        
+        /* --- PREMIUM REVIEW SPLIT LAYOUT --- */
+        .review-layout { 
+            display: flex; 
+            flex-direction: row; 
+            gap: 10px;
+            align-items: flex-start; /* Form aur display ko zabardasti stretch hone se rokega */
+            justify-content: space-between; 
+            width: 100%; 
+            padding: 10px; 
+            box-sizing: border-box;
+        }
+        
+        /* Left display side maximum height restricted */
+        .reviews-display { 
+            flex: 1.4; 
+            min-width: 0; 
+            max-height: 400px; /* Isse zyada bada box nahi khinchega */
+            overflow-y: auto; 
+            padding-right: 12px;
+            box-sizing: border-box;
+        }
+        
+        /* Custom Premium Scrollbar */
+        .reviews-display::-webkit-scrollbar { width: 5px; }
+        .reviews-display::-webkit-scrollbar-track { background: #0a0a0a; }
+        .reviews-display::-webkit-scrollbar-thumb { background: gold; border-radius: 3px; }
+
+        .review-form-container { 
+            flex: 0.8; 
+            width: 100%;
+        }
+        
+        .reviews-grid-system {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; 
+            width: 100%;
+        }
+
+        /* --- SLEEK COMPACT CARDS (NO CUTTING DATA) --- */
+        .rev-card-item { 
+            background: #111; 
+            padding: 10px 14px; 
+            height: auto !important;      /* Fixed height hatayi taaki email na kate */
+            min-height: 65px;
+            border-radius: 6px; 
+            border: 1px solid #222;
+            border-left: 3px solid gold; 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center;          /* Avatar aur text row ke center mein align rahenge */
+            gap: 14px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
+            box-sizing: border-box;
+        }
+        .rev-card-item:hover {
+            transform: translateX(3px); 
+            border-color: gold;
+        }
+
+        /* --- CHARACTER AVATAR UNBEATABLE CENTER FIX --- */
+        .rev-avatar {
+            width: 38px !important;
+            height: 38px !important;
+            background: #222 !important;
+            border: 1px solid gold !important;
+            color: gold !important;
+            border-radius: 50% !important;
+            
+            /* Pure Geometric Center Alignment via Flex */
+            display: flex !important;
+            align-items: center !important;       /* Vertical Center */
+            justify-content: center !important;    /* Horizontal Center */
+            text-align: center !important;
+            
+            line-height: 1 !important;            /* Font metadata extra space zero */
+            font-weight: bold !important;
+            font-size: 14px !important;
+            text-transform: uppercase !important;
+            flex-shrink: 0 !important; 
+            box-sizing: border-box !important;
+        }
+
+        /* Content inside review card */
+        .rev-content-block {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            width: 100%;
+            min-width: 0; 
+        }
+        .rev-header-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .rev-card-item h4 { margin: 0; color: #fff; font-size: 13px; font-weight: 600; }
+        .rev-stars { color: gold; font-size: 11px; letter-spacing: 1px; }
+        
+        /* Email styling fix */
+        .rev-email-text {
+            font-size: 11px;
+            color: #666;
+            margin: 0;
+            word-break: break-all;
+        }
+        
+        /* Comment text styling */
+        .rev-card-item p { 
+            margin: 2px 0 0 0; 
+            color: #aaa; 
+            font-size: 12px; 
+            line-height: 1.4; 
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Maximum 2 lines dikhayega taaki dabba bada na ho */
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word; 
+        }
+
+        /* --- QR SCANNER MODAL OVERLAY --- */
+        #qr-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 10000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-align: center; padding: 20px; box-sizing: border-box;
+        }
+        #reader { 
+            width: 100%; max-width: 320px; border: 2px solid gold; border-radius: 15px; 
+            overflow: hidden; background: #222; margin-bottom: 20px;
+        }
+        .close-scanner {
+            margin-top: 20px; background: #c5a028; border: none;
+            color: black; font-weight: bold; padding: 12px 25px; cursor: pointer; border-radius: 5px;
+            width: auto; font-size: 14px; text-transform: uppercase;
+        }
+        
+        .offer { width: 100%; height: auto; border: 2px solid gold; box-shadow: inset 10px 15px 25px silver; }
+        .gal-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 15px; text-align: center; box-sizing: border-box; }
+        .gal-title { color: gold; margin: 0; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- MODERN LUXURY FOOTER STYLING --- */
+        footer {
+            background: #050505;
+            border-top: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 40px 20px 20px 20px;
+            color: #ccc;
+            font-family: sans-serif;
+            margin-top: 60px;
+        }
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: space-between;
+        }
+        .footer-column { flex: 1; min-width: 250px; }
+        .footer-column h3 {
+            color: gold; text-transform: uppercase; letter-spacing: 1px; font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 8px;
+        }
+        .footer-column p { font-size: 14px; line-height: 1.6; margin: 8px 0; color: #aaa; }
+        .footer-bottom {
+            max-width: 1200px; margin: 30px auto 0 auto; padding-top: 20px; border-top: 1px solid #111; text-align: center; font-size: 12px; color: #555; letter-spacing: 1px;
+        }
+
+        /* --- ADVANCED CLEAN RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 992px) {
+            .review-layout { flex-direction: column-reverse; align-items: center; gap: 30px; }
+            .reviews-display, .review-form-container { width: 100%; max-width: 100%; }
+            .reviews-display { max-height: 350px; }
+        }
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; text-align: center; padding: 15px; }
+            header nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+            .gallery-wrapper { width: 100%; max-width: 100%; height: 220px; }
+            #reader { width: 100%; }
+            .hero h1 { font-size: 2rem; }
+            .hero-btns { display: flex; flex-direction: column; width: 100%; gap: 10px; padding: 0 20px; box-sizing: border-box; }
+            .hero-btns button { width: 100%; margin: 0; }
+            .footer-container { flex-direction: column; gap: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="qr-overlay">
+        <h2 style="color: gold; margin-bottom: 5px; letter-spacing: 1px;">SCAN TABLE QR</h2>
+        <p style="margin-bottom: 20px; font-size: 14px; color: #ccc;">Point your camera at the QR code on your table</p>
+        
+        <div id="reader"></div>
+
+        <button class="close-scanner" onclick="hideScanner()">Cancel / Back</button>
+        <div style="margin-top: 15px;">
+            <p style="font-size: 12px; color: #777;">Having trouble? Ask our staff for assistance.</p>
+        </div>
+    </div>
+
+    <header style="border: 1px solid gold; box-shadow: inset 0px 0px 25px goldenrod; display: flex; justify-content: space-between; align-items: center; padding: 15px 30px;">
+        <div class="logo" style="color: gold; font-weight: bold; font-size: 24px; letter-spacing: 2px;">LUXEDINING</div>
+        <nav>
+            <a href="#gallery" style="margin-right: 15px; color: #fff; text-decoration: none;">Gallery</a>
+            <a href="menu.html" style="margin-right: 15px; color: #fff; text-decoration: none;">Menu</a>
+            <a href="login.html" class="staff-btn" style="border: 1px solid gold; padding: 5px 10px; color: gold; text-decoration: none; border-radius: 4px;">Staff Login</a>
+        </nav>
+    </header>
+
+    <section id="offerStatusBox" class="offer" style="width: 100%; min-height: 60px; border: 1px solid rgba(212, 175, 55, 0.3); background: #000; margin-bottom: 20px; display: none; flex-direction: column; align-items: center; justify-content: center;">
+        <h2 style="color: gold; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; margin: 8px 0 2px 0;">🔥 Daily Offer 🔥</h2>
+        <div id="offerDisplay" style="padding-bottom: 8px;">
+            <p id="activeOfferDisplay" style="color: #fff; font-size: 14px; font-weight: bold; margin: 0; text-align: center;"></p>
+        </div>
+    </section>
+
+    <section class="hero" style="text-align: center; padding: 60px 20px; background: #050505;">
+        <h1 style="color: white; font-size: 3rem; margin-bottom: 10px;">Experience Fine Dining</h1>
+        <p style="color: #aaa; margin-bottom: 30px;">Book a table or order directly to your seat.</p>
+        <div class="hero-btns">
+            <button onclick="location.href='bookings.html'" style="border: 2px solid gold; background: none; color: gold; padding: 12px 25px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-right: 10px;">📅 Book for Later</button>
+            <button onclick="showScanner()" class="btn-gold" style="border: 2px solid silver; background: gold; color: black; padding: 12px 25px; font-weight: bold; cursor: pointer; border-radius: 5px;">🍽️ I am at the Cafe</button>
+        </div>
+    </section>
+
+    <section id="gallery" class="container" style="padding: 40px 20px;">
+        <h2 class="section-title" style="color: gold; text-align: center; margin-bottom: 30px; letter-spacing: 2px; text-transform: uppercase;">Our Ambience</h2>
+        <div id="galleryDisplay" class="gallery-grid">
+            <p style="color: gray;">Loading ambience photos...</p>
+        </div>
+    </section>
+
+    <section class="container review-section" style="padding: 40px 20px; background: #0a0a0a;">
+        <h2 class="section-title" style="color: gold; text-align: center; margin-bottom: 40px; letter-spacing: 2px; text-transform: uppercase;">Guest Experiences</h2>
+        <div class="review-layout">
+            
+            <div class="reviews-display">
+                <div id="reviewList" class="reviews-grid-system">
+                    <p style="color: gray; text-align: center;">Parsing global guest reviews...</p>
+                </div>
+            </div>
+
+            <div class="review-form-container">
+                <div class="admin-card review-card-form" style="background: #111; padding: 20px; border-radius: 12px; border: 1px solid #222; box-shadow: 0 10px 25px rgba(0,0,0,0.5); box-sizing: border-box;">
+                    <h3 style="color: gold; margin-top: 0; margin-bottom: 15px; text-transform: uppercase; font-size: 15px; letter-spacing: 1px;">Rate Your Visit</h3>
+                    <form id="reviewForm">
+                        <input type="text" id="customer_name" placeholder="Your Name" style="width: 100%; padding: 10px; margin-bottom: 12px; background: #222; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; font-size: 13px;" required><br>
+                        <input type="email" id="mail" placeholder="Your mail address" style="width: 100%; padding: 10px; margin-bottom: 12px; background: #222; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; font-size: 13px;" required><br>
+                        
+                        <label style="color: #aaa; font-size: 12px; display: block; margin-bottom: 4px;">Your Rating:</label>
+                        <select id="rating" style="width: 100%; padding: 10px; margin-bottom: 12px; background: #222; border: 1px solid #333; color: gold; border-radius: 5px; box-sizing: border-box; font-weight: bold; font-size: 13px;">
+                            <option value="5">Excellent ★★★★★</option>
+                            <option value="4">Great ★★★★</option>
+                            <option value="3">Good ★★★</option>
+                            <option value="2">Average ★★</option>
+                            <option value="1">Poor ★</option>
+                        </select><br>
+                        
+                        <textarea id="comment" placeholder="Tell us about the food and vibe..." style="width: 100%; padding: 10px; height: 75px; margin-bottom: 15px; background: #222; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; resize: none; font-size: 13px;" required></textarea>
+                        <button type="submit" style="width: 100%; padding: 12px; background: gold; color: black; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 13px;">POST REVIEW</button>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <div id="galleryModal" style="display: none; position: fixed; z-index: 20000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.95); align-items: center; justify-content: center;">
+        <span onclick="closeGalleryModal()" style="position: absolute; top: 20px; right: 35px; color: gold; font-size: 40px; font-weight: bold; cursor: pointer; user-select: none;">&times;</span>
+        <img id="modalImage" style="max-width: 90%; max-height: 80%; border: 2px solid gold; border-radius: 8px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.5); object-fit: contain;">
+        <div id="modalCaption" style="position: absolute; bottom: 5%; color: #fff; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; font-weight: bold;"></div>
+    </div>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-column">
+                <h3>About LuxeDining</h3>
+                <p id="footerAbout">Crafting exquisite culinary journeys with a premium luxury ambience. Experience fine dining right from your table.</p>
+            </div>
+            <div class="footer-column">
+                <h3>Opening Hours</h3>
+                <p id="footerHours">Mon - Sun: 11:00 AM - 11:30 PM</p>
+            </div>
+            <div class="footer-column">
+                <h3>Contact & Address</h3>
+                <p id="footerContact">Email: contact@luxedining.com<br>Phone: +91 XXXXXXXXXX<br>Indore, Madhya Pradesh, India</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 LUXEDINING. Powered by Luxe Engine. All Rights Reserved.
+        </div>
+    </footer>
+
+    <script src="js/index.js"></script>
+</body>
+</html>

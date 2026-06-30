@@ -1,0 +1,378 @@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Luxe Manager | Premium Cafe Dashboard</title>
+            <style>
+                :root { 
+                    --gold: #d4af37; 
+                    --dark: #0a0a0a; 
+                    --card: #1a1a1a; 
+                    --green: #2ecc71; 
+                    --red: #e74c3c; 
+                    --orange: #ff9900;
+                }
+                body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; padding: 20px; margin: 0; }
+                
+                .order-card {
+        border: 1px solid #444;
+        background: #1a1a1a;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        color: white;
+    }
+    .order-card h3 { color: #d4af37; margin: 0; }
+    .order-card button {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+                /* Stats Dashboard Bar */
+                .stats-bar { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+                .stat-card { background: var(--card); border: 1px solid #333; padding: 15px; border-radius: 10px; flex: 1; min-width: 200px; text-align: center; }
+                
+                /* Main Layout Grid Split for Live Feed */
+                .dashboard-wrapper {
+                    display: grid;
+                    grid-template-columns: 1fr 340px;
+                    gap: 20px;
+                    align-items: start;
+                }
+
+                @media (max-width: 1024px) {
+                    .dashboard-wrapper { grid-template-columns: 1fr; }
+                }
+
+                .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+                .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; position: relative; }
+                h2 { color: var(--gold); border-bottom: 2px solid #333; padding-bottom: 10px; font-size: 1.1rem; margin-top: 0; }
+                
+                /* Master Grid View Scaling Alignment */
+                .table-container { 
+                    display: grid; 
+                    grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); 
+                    gap: 10px; 
+                    width: 100%;
+                }
+                .table-btn { height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold; font-size: 11px; cursor: pointer; border: none; transition: 0.3s; gap: 2px; }
+                .Available { background: var(--green); color: white; }
+                .Occupied { background: var(--red); color: white; box-shadow: 0 0 10px rgba(231, 76, 60, 0.4); }
+                .Reserved { background: var(--orange); color: white; box-shadow: 0 0 10px rgba(255, 153, 0, 0.4); }
+                
+                .table-btn small { font-size: 9px; opacity: 0.85; text-transform: uppercase; }
+                
+                /* Form & Inputs */
+                input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+                input, select { background: #222; border: 1px solid #444; color: white; outline: none; }
+                input:focus, select:focus { border-color: var(--gold); }
+                button { background: var(--gold); border: none; font-weight: bold; cursor: pointer; color: black; text-transform: uppercase; transition: 0.2s; }
+                button:hover { background: #b8952d; }
+                
+                /* List Displays */
+                .list-box { max-height: 220px; overflow-y: auto; background: #000; padding: 10px; border-radius: 6px; border: 1px solid #222; margin-top: 10px; }
+                .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #222; font-size: 0.9rem; }
+                .item-row:last-child { border-bottom: none; }
+
+                /* PERSISTENT SIDEBAR ALERTS CARD */
+                .sidebar-alerts-card {
+                    background: var(--card);
+                    border: 1px solid #333;
+                    border-radius: 12px;
+                    padding: 20px;
+                    position: sticky;
+                    top: 20px;
+                    max-height: 85vh;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .alerts-feed {
+                    overflow-y: auto;
+                    margin-top: 15px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    max-height: 65vh;
+                }
+
+                .audit-container {
+        background: #0d0d0d;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+        color: #fff;
+    }
+
+    .audit-header {
+        font-size: 14px;
+        font-weight: bold;
+        color: var(--gold);
+        margin-bottom: 10px;
+        border-bottom: 1px solid #444;
+        padding-bottom: 5px;
+    }
+
+    .audit-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #222;
+        font-size: 12px;
+    }
+                
+                /* Custom Scrollbar Mechanics for Luxury Viewport */
+                .alerts-feed::-webkit-scrollbar, .list-box::-webkit-scrollbar { width: 5px; }
+                .alerts-feed::-webkit-scrollbar-track, .list-box::-webkit-scrollbar-track { background: transparent; }
+                .alerts-feed::-webkit-scrollbar-thumb, .list-box::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+                .alerts-feed::-webkit-scrollbar-thumb:hover, .list-box::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+                .alert-node {
+                    background: #0d0d0d;
+                    border-left: 4px solid var(--gold);
+                    padding: 12px;
+                    border-radius: 6px;
+                    position: relative;
+                    font-size: 13px;
+                    line-height: 1.4;
+                }
+                .alert-node.bill-request { border-left-color: var(--red); background: #221215; }
+                .alert-node.qr-live { border-left-color: var(--green); }
+                .alert-dismiss {
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: transparent;
+                    border: none;
+                    color: #555;
+                    cursor: pointer;
+                    font-size: 12px;
+                }
+                .alert-dismiss:hover { color: var(--red); }
+
+                .feedback-aligned-block { border-color: #444; }
+
+                /* Billing Modal */
+                #modalOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999; }
+                #billModal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#111; color:white; padding:25px; border:2px solid var(--gold); border-radius:15px; z-index:1000; width:90%; max-width:400px; box-shadow: 0 0 50px #000; }
+                
+                .bill-header { text-align: center; border-bottom: 1px dashed #444; padding-bottom: 15px; margin-bottom: 15px; }
+                .bill-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+                .bill-total-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-weight: bold; }
+                .bill-total-row input, .bill-total-row select { width: 90px; padding: 5px; margin: 0; text-align: center; background: #000; border: 1px solid #333; color: white; }
+                
+                /* AI Insights Styling */
+                .ai-metric { background: #0d1b2a; border-left: 4px solid #3a86ff; padding: 10px; margin: 8px 0; border-radius: 4px; font-size: 13px; }
+            </style>
+        </head>
+        <body>
+
+            <h1 style="text-align:center; color:var(--gold); margin-bottom:5px;">👑 LUXE OPERATIONS DASHBOARD</h1>
+            <p style="text-align:center; color:gray; font-size:12px; margin-bottom:25px;">Counter Intelligence & Automation Engine</p>
+
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <span style="color: gray; font-size: 11px; display: block; text-transform: uppercase;">Today's Revenue</span>
+                    <strong style="color: var(--green); font-size: 1.6rem;">₹<span id="statRevenue">0</span></strong>
+                </div>
+                <div class="stat-card">
+                    <span style="color: gray; font-size: 11px; display: block; text-transform: uppercase;">Active Floor Tables</span>
+                    <strong style="color: var(--red); font-size: 1.6rem;"><span id="statActiveTables">0</span></strong>
+                </div>
+                <div class="stat-card">
+                    <span style="color: gray; font-size: 11px; display: block; text-transform: uppercase;">Pending Bookings</span>
+                    <strong style="color: var(--gold); font-size: 1.6rem;"><span id="statNewBookings">0</span></strong>
+                </div>
+            </div>
+
+            <div class="dashboard-wrapper">
+                
+                <!-- Left Column: Operations Control Grid -->
+                <div class="admin-grid">
+                    
+                    <div class="card" style="border-color: var(--gold);">
+                        <h2>🧾 Counter Manual Bill</h2>
+                        <p style="font-size: 12px; color: #888;">Enter Table No. to compile active KOT orders:</p>
+                        <input type="number" id="manualTableInput" placeholder="Enter Table Number (e.g. 5)" min="1">
+                        <button onclick="fetchManualBill()" style="background: white; color: black;">GENERATE INVOICE</button>
+                    </div>
+
+                    <div class="card">
+                        <h2>🪑 Floor Grid Status</h2>
+                        <div class="table-container" id="tableGrid"></div>
+                        <p style="font-size: 11px; color: #666; margin-top: 15px;">Green = Empty | Red = Dining Active | Orange = Reserved Holding</p>
+                    </div>
+
+                    <!-- Inside the .admin-grid div -->
+                    <div id="orderContainer" class="orders-grid">
+                    </div>
+                    
+                    <!-- <div class="card" style="border-color: #3a86ff;">
+                        <h2>🤖 AI Business Insights Panel</h2>
+                        <div id="aiLoading" style="color: gray; font-size: 13px;">Analyzing streams...</div>
+                        <div id="aiContent" style="display: none;">
+                            <div class="ai-metric">
+                                <strong>Customer Sentiment Dynamics:</strong>
+                                <div id="aiSentiment" style="color: var(--green); font-weight: bold; margin-top: 3px;"></div>
+                            </div>
+                            <div class="ai-metric">
+                                <strong>Predicted Floor Peak Rush:</strong>
+                                <div id="aiPeak" style="color: var(--gold); font-weight: bold; margin-top: 3px;"></div>
+                            </div>
+                            <p id="aiRecommendation" style="font-size: 11px; color: #aaa; margin: 5px 0 0 0; line-height: 1.4;"></p>
+                        </div>
+                        <button onclick="loadAIInsights()" style="background: #222; color: #3a86ff; font-size: 11px; padding: 6px; margin-top: 10px; width: auto; text-transform: none;">Refresh Analytics Engine</button>
+                    </div> -->
+
+                    <div class="card">
+                        <h2>📅 Recent Reservation Ledger</h2>
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <input type="text" id="tokenVerifyInput" placeholder="Verify Token (e.g. LUXE4561)" style="margin: 0; padding: 10px;">
+                            <button onclick="verifyBookingToken()" style="margin: 0; padding: 10px; width: auto; font-size: 12px; white-space: nowrap;">Check Token</button>
+                        </div>
+                        <input type="text" id="bookingSearch" placeholder="Filter bookings by name or phone..." style="padding: 8px;">
+                        <div class="list-box" id="bookingList"></div>
+                    </div>
+
+                    <div class="card">
+                        <h2>🔥 Dynamic Broadcast Offer</h2>
+                        <div id="offerStatusBox" style="display:none; background:#1a1500; border:1px solid #d4af37; padding:10px; margin-bottom:15px; border-radius:8px;">
+                            <p id="activeOfferDisplay" style="color:#d4af37; margin:0; font-weight:bold; font-size: 13px;"></p>
+                            <button type="button" onclick="removeOffer()" style="background:#ff4444; color:white; padding:5px 10px; margin-top:8px; width:auto; font-size:11px;">KILL PROMO STREAM</button>
+                        </div>
+                        <input type="text" id="offerInput" placeholder="e.g. 20% OFF on Premium Starters">
+                        <button type="button" onclick="saveOffer()">BROADCAST TO DOCK</button>
+                    </div>
+
+                    <div class="card">
+                        <h2>🖼️ Ambience Showcase Stream</h2>
+                        <form id="assetForm">
+                            <input type="text" id="aTitle" placeholder="Photo Caption / Location" required>
+                            <input type="file" id="aFile" name="image" accept="image/*" required>
+                            <button type="submit" style="background:#333; color:white;">PUSH TO AMBIENCE</button>
+                        </form>
+                        <div class="list-box" id="galleryDisplay"></div>
+                    </div>
+
+                    <div class="card">
+                        <h2>🍔 Catalog & Premium Menu</h2>
+                        <form id="menuForm">
+                            <input type="text" id="mName" placeholder="Dish / Item Name" required>
+                            <input type="number" id="mPrice" placeholder="Base Price (₹)" required>
+                            <select id="mCat">
+                                <option value="Starters">Starters (Finger Foods)</option>
+                                <option value="Main Course">Main Course (Premium Platters)</option>
+                                <option value="Drinks">Drinks & Mocktails</option>
+                                <option value="Desserts">Sweet Treats / Desserts</option>
+                            </select>
+                            <input type="file" id="mFile" name="image" accept="image/*" required>
+                            <button type="submit">COMMIT TO LIVE SYSTEM</button>
+                        </form>
+                        <div class="list-box" id="menuList"></div>
+                    </div> 
+                    
+                    <div class="card" style="border-color: var(--gold);">
+                        <h2>🎓 Staff hub </h2>
+                        <form id="facultyForm">
+                            <input type="text" id="fName" placeholder="Staff Full Name" required>
+                            <input type="text" id="fDesignation" placeholder="Role Designation (e.g. Head Barista, Operations Chef)" required>
+                            <input type="file" id="fFile" name="fFile" accept="image/*" required>
+                            <button type="submit" style="background: gold; color: black;">DEPLOY STAFF PROFILE</button>
+                        </form>
+                        <div class="list-box" id="facultyDisplay"></div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>🪑 Encrypted QR Generator</h2>
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                            <input type="number" id="qrTableNum" style="width: 100%; padding: 15px; font-size: 1.3rem; text-align: center; border-radius: 12px; border: 2px solid gold; background: #000; color: white;" placeholder="Table ID">
+                            <button onclick="generateQRCode()" style="width: 100%; padding: 15px; font-size: 1rem; font-weight: bold; background: gold; color: black; border-radius: 12px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);">
+                                🚀 GENERATE QR STRUCT
+                            </button>
+                        </div>
+                        <div id="qrResult" style="display:none; margin-top: 20px; text-align: center; background: white; padding: 20px; border-radius: 15px;">
+                            <h3 id="qrLabel" style="color: #000; margin-top:0;"></h3>
+                            <img id="qrImage" src="" style="width: 200px; border: 1px solid #eee;">
+                            <button onclick="downloadQR()" style="width: 100%; margin-top: 15px; padding: 12px; background: #222; color: gold; border-radius: 10px; border: none; font-weight: bold;">
+                                📥 DOWNLOAD PNG STRIP
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card feedback-aligned-block">
+                        <h2>💬 Live Feedbacks Log</h2>
+                        <div class="list-box" id="reviewList" style="max-height: 220px;"></div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Live Persistent Notification Center Panel -->
+                <div class="sidebar-alerts-card">
+                    <h2 style="margin: 0; border: none;">🚨 Live System Alerts</h2>
+                    <p style="font-size: 11px; color: #666; margin: 4px 0 0 0;">Stays active until manually dismissed</p>
+                    <div class="alerts-feed" id="notificationFeed">
+                        <p style="text-align: center; color: #444; font-size: 12px; margin-top: 20px;">No ongoing floor events.</p>
+                    </div>
+                </div>
+<!-- 
+            </div>
+            <div class="audit-container">
+        <div class="audit-header">📊 AAJ KA TRANSACTION LOG</div>
+        <div id="dailyReportList">
+            </div>
+    </div> -->
+
+            <!-- Modals Layout Infrastructure -->
+            <div id="modalOverlay" onclick="closeBill()"></div>
+            <div id="billModal">
+                <div class="bill-header">
+                    <h2 style="color:var(--gold); border:none; margin:0; font-size: 1.4rem;">LUXE CAFE RECEIPT</h2>
+                    <small style="color: #888;">Active Node Counter • Table No: <span id="billTableNum" style="color: white; font-weight: bold;">--</span></small>
+                </div>
+                
+                <div id="billItemsList" style="min-height: 50px; font-size: 13px;"></div>
+                
+                <div style="border-top: 1px dashed #444; padding-top: 10px; margin-top: 10px;">
+                    <div class="bill-total-row">
+                        <span>Subtotal Baseline</span>
+                        <span>₹<span id="subtotalAmt">0</span></span>
+                    </div>
+                    <div class="bill-total-row">
+                        <span>CGST + SGST (%)</span>
+                        <input type="number" id="gstRate" value="5" oninput="calculateFinalTotal()">
+                    </div>
+                    <div class="bill-total-row">
+                        <span>Service / Overhead (₹)</span>
+                        <input type="number" id="serviceCharge" value="0" oninput="calculateFinalTotal()">
+                    </div>
+                    <div class="bill-total-row">
+                        <span>Payment Channels</span>
+                        <select id="paymentMode">
+                            <option value="UPI">Digital UPI / QR</option>
+                            <option value="Cash" selected>Cash Remittance</option>
+                            <option value="Card">POS Swipe Terminal</option>
+                        </select>
+                    </div>
+                    <div class="bill-total-row" style="color:var(--gold); font-size: 1.3rem; margin-top: 15px; border-top: 2px solid #333; padding-top: 10px;">
+                        <span>GRAND TOTAL</span>
+                        <span>₹<span id="finalTotalAmt">0</span></span>
+                    </div>
+                </div>
+                
+                <div style="display:flex; flex-direction: column; gap:8px; margin-top:20px;">
+                    <button onclick="printAndMarkPaid()" style="background: white; color: black;">🖨️ PRINT & AUDIT BILL</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="payAndClear()" style="flex:2; background: var(--green); color: white;">PAID & FLUSH TABLE</button>
+                        <button onclick="closeBill()" style="background:#333; color:white; flex:1;">ESCAPE</button>
+                    </div>
+                </div>
+            </div>
+            
+            <script src="js/manager.js"></script>
+        </body>
+        </html>

@@ -1,0 +1,60 @@
+:root { --gold: #d4af37; --dark: #0a0a0a; --gray: #1a1a1a; }
+body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
+header { display: flex; justify-content: space-between; padding: 20px 5%; background: rgba(0,0,0,0.8); position: sticky; top: 0; z-index: 100; }
+.logo { font-size: 1.8rem; font-weight: bold; color: var(--gold); }
+nav a { color: white; text-decoration: none; margin-left: 20px; font-weight: 500; }
+.hero { text-align: center; padding: 100px 20px; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1350&q=80'); background-size: cover; }
+.hero h1 { font-size: 3.5rem; margin-bottom: 10px; }
+.btn-gold { background: var(--gold); color: black; border: none; }
+button { padding: 12px 30px; font-size: 1rem; cursor: pointer; border-radius: 5px; margin: 10px; }
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; padding: 20px 0; }
+.gallery-item { position: relative; height: 250px; overflow: hidden; border-radius: 10px; }
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+.gallery-item:hover img { transform: scale(1.1); }
+.overlay { position: absolute; bottom: 0; background: rgba(0,0,0,0.7); width: 100%; padding: 10px; text-align: center; }
+.staff-btn { border: 1px solid var(--gold); padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; }
+
+/* Review Layout Styling */
+.review-layout {
+    display: flex;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+.reviews-display {
+    flex: 2; /* List ko zyada jagah milegi */
+    max-height: 500px;
+    overflow-y: auto; /* Agar reviews zyada ho jayein toh scroll ban jaye */
+    padding-right: 10px;
+}
+
+.review-form-container {
+    flex: 1; /* Form thoda patla rahega side mein */
+    min-width: 300px;
+}
+
+.review-card-form {
+    position: sticky;
+    top: 100px; /* Scroll karne par form wahi ruka rahega */
+    background: #111;
+    border: 1px solid #d4af37;
+    padding: 25px;
+    border-radius: 12px;
+}
+
+/* Star colors */
+.stars-gold {
+    color: #d4af37;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+/* Mobile Friendly */
+@media (max-width: 768px) {
+    .review-layout {
+        flex-direction: column; /* Mobile par ek ke niche ek */
+    }
+    .review-form-container {
+        order: -1; /* Mobile par form pehle dikhega */
+    }
+}

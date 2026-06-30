@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxe Dining Menu</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Table ID Display Bar */
+        .table-status {
+            background: #111;
+            border-bottom: 1px solid gold;
+            padding: 12px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        .table-status b { color: gold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; flex: 1; text-align: center; }
+        
+        .nav-back-btn {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            position: absolute;
+            left: 15px;
+        }
+        .nav-back-btn:hover {
+            color: gold;
+        }
+
+        /* Cart Modal Styles */
+        #cartModal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.95); 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 2000; 
+        }
+        .modal-content { 
+            background: #111; 
+            border: 1px solid gold; 
+            padding: 25px; 
+            width: 90%; 
+            max-width: 400px; 
+            border-radius: 15px; 
+            position: relative; 
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1);
+        }
+        .close-btn { 
+            position: absolute; 
+            top: 10px; 
+            right: 15px; 
+            font-size: 28px; 
+            cursor: pointer; 
+            color: gold; 
+            transition: 0.3s;
+        }
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        /* Custom scrollbar for beautiful cart lists */
+        #cartItemList::-webkit-scrollbar {
+            width: 6px;
+        }
+        #cartItemList::-webkit-scrollbar-track {
+            background: #111;
+        }
+        #cartItemList::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+        #cartItemList::-webkit-scrollbar-thumb:hover {
+            background: gold;
+        }
+
+        /* Phase Styling: Active Token & WhatsApp Panel Card */
+        .session-container {
+            background: #080808;
+            border: 1px dashed gold;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 30px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.05);
+        }
+        .token-badge {
+            background: #222;
+            color: gold;
+            border: 1px solid gold;
+            padding: 8px 18px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .whatsapp-btn {
+            width: 100%;
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .whatsapp-btn:hover {
+            background: #20ba5a;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+        }
+        .live-pulse-tag {
+            color: #2ecc71;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse-anim 1.5s infinite;
+        }
+        @keyframes pulse-anim {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+
+        /* Menu Card Specific Fixes */
+        .menu-card {
+            background: #0d0d0d;
+            border: 1px solid #1c1c1c;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .menu-card:hover { border-color: gold; }
+        .menu-card img { width: 100%; height: 180px; object-fit: cover; background: #222; }
+        .menu-details { padding: 15px; display: flex; flex-direction: column; flex: 1; }
+        .menu-details h3 { margin: 0 0 5px 0; font-size: 1.1rem; letter-spacing: 0.5px; }
+        .category-tag { font-size: 11px; color: #888; text-transform: uppercase; margin: 0 0 15px 0; letter-spacing: 1px; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .price { color: gold; font-weight: bold; font-size: 1.1rem; }
+        
+        .cart-item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1a1a1a; }
+        .remove-item-btn { color: #ff4757; background: none; border: none; cursor: pointer; font-size: 14px; }
+    </style>
+</head>
+<body style="background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-bottom: 120px; margin: 0;">
+
+    <div class="table-status">
+        <a href="index.html" class="nav-back-btn"><i class="fa-solid fa-house"></i> Home</a>
+        <b id="displayTableNum">Initializing Session Streams...</b>
+        <button id="billBtn" style="background:none; border:1px solid #ff4757; color:#ff4757; font-size:11px; font-weight:bold; padding:4px 12px; border-radius:4px; cursor:pointer; text-transform:uppercase;">
+            Request Bill
+        </button>
+    </div>
+
+    <div class="container" style="padding: 20px; box-sizing: border-box; max-width: 1200px; margin: 0 auto;">
+        <h1 style="color: gold; text-align: center; margin-top: 15px; letter-spacing: 2px; font-weight: 600; text-transform: uppercase; font-size: 2rem; margin-bottom: 5px;">
+            LUXE DINING MENU
+        </h1>
+        <p style="text-align: center; color: #666; font-size: 13px; margin: 0 0 25px 0; text-transform: uppercase; letter-spacing: 1px;">Premium Tabletop Digital Ordering</p>
+        
+        <input type="text" id="searchBar" placeholder="Search luxury dishes..." style="width: 100%; padding: 15px 25px; border-radius: 30px; border: 1px solid #222; margin-bottom: 25px; outline: none; font-size: 16px; background: #111; color: #fff; box-sizing: border-box; transition: 0.3s;">
+        
+        <div id="menuContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+            <p style="color: gray; text-align: center; grid-column: 1/-1;">Synchronizing global menu dataset streams...</p>
+        </div>
+
+        <div id="activeSessionPanel" class="session-container" style="display: none;">
+            <div class="live-pulse-tag">
+                <div class="pulse-dot"></div> Active Session Sync
+            </div>
+            <p style="font-size:13px; color:#888; margin:5px 0;">Use this tracking token at checkout counter:</p>
+            <div id="activeOrderToken" class="token-badge">N/A</div>
+        </div>
+    </div>
+
+    <div id="viewCartBtn" style="position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: gold; color: black; padding: 15px 45px; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 10px 30px rgba(212,175,55,0.2); z-index: 1000; display: block; font-size: 15px; letter-spacing: 1px; transition: 0.3s; text-transform: uppercase;">
+        🛒 VIEW CART (<span id="cartCount">0</span>)
+    </div>
+
+    <div id="cartModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeCartBtn">&times;</span>
+            <h2 style="color: gold; margin-top: 0; letter-spacing: 1px; font-size: 1.5rem; border-bottom: 1px solid #222; padding-bottom: 10px;">Your Order</h2>
+            
+            <div id="cartItemList" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;">
+                <p style="color:#555; text-align:center; font-size:13px; padding:20px 0;">Your cart is currently empty</p>
+            </div>
+            
+            <div style="border-top: 1px solid #222; padding-top: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 1.15rem;">
+                <span>Total Amount:</span>
+                <b style="color: gold;">₹<span id="totalPrice">0</span></b>
+            </div>
+            
+            <button id="checkoutBtn" style="width: 100%; background: gold; color: black; border: none; padding: 15px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 1.1rem; letter-spacing: 1px; transition: 0.3s; text-transform: uppercase;">
+                PLACE ORDER NOW
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let tableNum = urlParams.get('table');
+
+            if (!tableNum) {
+                tableNum = localStorage.getItem('selectedTable');
+            }
+
+            if (tableNum && tableNum !== "null" && tableNum !== "undefined") {
+                localStorage.setItem('selectedTable', tableNum);
+                const displayBox = document.getElementById('displayTableNum');
+                if (displayBox) {
+                    displayBox.innerText = `TABLE NO: ${tableNum}`;
+                }
+                console.log(`Verified Active QR Session for Table: ${tableNum}`);
+            } else {
+                alert("❌ Please Scan the QR on the table to order!");
+                window.location.href = "index.html";
+            }
+        });
+    </script>
+
+    <script src="js/menu.js"></script>
+</body>
+</html>
