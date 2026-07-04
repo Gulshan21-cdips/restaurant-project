@@ -17,8 +17,6 @@ app.use(cors());
 
 // --- CONFIG ---
 const HOST_IP = "10.135.12.1"; 
-const PORT = process.env.PORT || 3000;
-
 
 const publicPath = path.join(__dirname, '../public');
 const uploadPath = path.join(publicPath, 'uploads');
@@ -32,18 +30,13 @@ app.use('/uploads', express.static(uploadPath));
 
 // --- DATABASE CONNECTION ---
 // --- DATABASE CONNECTION (Cloud Ready) ---
-// Purane 'const db = mysql.createConnection(...)' ko hata kar ye likhein:
-const db = mysql.createPool({
+const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'luxedining_db',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    multipleStatements: true 
 });
-
-// Ab db.query() waisa hi kaam karega, lekin ye pool se connection lega.
 
 db.connect(err => {
     if (err) {
@@ -514,9 +507,8 @@ app.get('/:page', (req, res) => {
     return res.sendFile(fs.existsSync(filePath) ? filePath : path.join(publicPath, 'index.html'));
 });
 
+app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
 
 // purana: app.listen(PORT, ...
 // naya:
-
-app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
-
+const PORT = process.env.PORT || 3000;
