@@ -507,8 +507,10 @@ app.get('/:page', (req, res) => {
     return res.sendFile(fs.existsSync(filePath) ? filePath : path.join(publicPath, 'index.html'));
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
 
 // purana: app.listen(PORT, ...
 // naya:
 const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
+
