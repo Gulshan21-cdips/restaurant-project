@@ -9,7 +9,6 @@ const app = express();
 // Ye line honi chahiye taaki images dikh sakein
 app.use('/uploads', express.static('uploads'));
 
-const app = express();
 
 // --- MIDDLEWARE ---
 app.use(express.json());
