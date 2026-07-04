@@ -17,7 +17,6 @@ app.use(cors());
 
 // --- CONFIG ---
 const HOST_IP = "10.135.12.1"; 
-const PORT = process.env.PORT || 3000;
 
 const publicPath = path.join(__dirname, '../public');
 const uploadPath = path.join(publicPath, 'uploads');
@@ -509,8 +508,6 @@ app.get('/:page', (req, res) => {
     const filePath = path.join(publicPath, page.endsWith('.html') ? page : `${page}.html`);
     return res.sendFile(fs.existsSync(filePath) ? filePath : path.join(publicPath, 'index.html'));
 });
-
-
-// purana: app.listen(PORT, ...
+const PORT = process.env.PORT || 3000;
 // naya:
 app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
