@@ -7,16 +7,17 @@ const cors = require('cors');
 const QRCode = require('qrcode');
 const app = express();
 // Ye line honi chahiye taaki images dikh sakein
+app.use('/uploads', express.static('uploads'));
 
 
 // --- MIDDLEWARE ---
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // --- CONFIG ---
 const HOST_IP = "10.135.12.1"; 
+const PORT = 3000;
 
 const publicPath = path.join(__dirname, '../public');
 const uploadPath = path.join(publicPath, 'uploads');
@@ -506,9 +507,9 @@ app.get('/:page', (req, res) => {
     const filePath = path.join(publicPath, page.endsWith('.html') ? page : `${page}.html`);
     return res.sendFile(fs.existsSync(filePath) ? filePath : path.join(publicPath, 'index.html'));
 });
-const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
 
 // purana: app.listen(PORT, ...
 // naya:
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
