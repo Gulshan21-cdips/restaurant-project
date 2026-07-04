@@ -17,7 +17,6 @@ app.use(cors());
 
 // --- CONFIG ---
 const HOST_IP = "10.135.12.1"; 
-const PORT = 3000;
 
 const publicPath = path.join(__dirname, '../public');
 const uploadPath = path.join(publicPath, 'uploads');
