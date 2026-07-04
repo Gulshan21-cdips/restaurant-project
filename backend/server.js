@@ -5,6 +5,9 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 const QRCode = require('qrcode');
+const app = express();
+// Ye line honi chahiye taaki images dikh sakein
+app.use('/uploads', express.static('uploads'));
 
 const app = express();
 
@@ -15,8 +18,8 @@ app.use(cors());
 
 // --- CONFIG ---
 const HOST_IP = "10.135.12.1"; 
-// Line 17 (const PORT = ... ) yahan se hat chuka hai.
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
+
 const publicPath = path.join(__dirname, '../public');
 const uploadPath = path.join(publicPath, 'uploads');
 const facultyUploadPath = path.join(uploadPath, 'faculty');
@@ -28,20 +31,15 @@ app.use(express.static(publicPath));
 app.use('/uploads', express.static(uploadPath));
 
 // --- DATABASE CONNECTION ---
-// Database connection ko thoda handle karte hain
+// --- DATABASE CONNECTION (Cloud Ready) ---
 const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
-    multipleStatements: true
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'luxedining_db',
+    multipleStatements: true 
 });
 
-// Ye check karne ke liye ki variables load huye ya nahi
-if (!process.env.DB_HOST) {
-    console.error("⚠️ WARNING: DB_HOST is missing in environment variables!");
-}
 db.connect(err => {
     if (err) {
         console.error("❌ DB CONNECTION FAILED: " + err.message);
@@ -511,4 +509,9 @@ app.get('/:page', (req, res) => {
     return res.sendFile(fs.existsSync(filePath) ? filePath : path.join(publicPath, 'index.html'));
 });
 
+app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
+
+// purana: app.listen(PORT, ...
+// naya:
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
