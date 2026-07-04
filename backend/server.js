@@ -41,13 +41,13 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-db.connect(err => {
-    if (err) {
-        console.error("❌ DB CONNECTION FAILED: " + err.message);
-    } else {
-        console.log(`🚀 LUXE DINING SERVER LIVE: http://${HOST_IP}:${PORT}`);
-    }
-});
+// db.connect(err => {
+//     if (err) {
+//         console.error("❌ DB CONNECTION FAILED: " + err.message);
+//     } else {
+//         console.log(`🚀 LUXE DINING SERVER LIVE: http://${HOST_IP}:${PORT}`);
+//     }
+// });
 
 // --- STORAGE CONFIG (MULTER) ---
 const storage = multer.diskStorage({
