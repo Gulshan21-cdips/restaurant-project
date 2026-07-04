@@ -369,7 +369,7 @@ async function updateStatus(id, newStatus, phone, name, bookingId) {
 }
 
 function sendWhatsApp(phone, name, bookingId) {
-    const msg = `Namaste ${name}! 🙏 Aapki booking (ID: ${bookingId}) Luxe Dining mein Confirm ho gayi hai. Hum aapka intezar karenge!`;
+    const msg = `Namaste ${name}! 🙏 Your booking (ID: ${bookingId}) Luxe Dining is waiting for you!`;
     const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     const newWindow = window.open(waUrl, '_blank');
     if(!newWindow) { console.warn("Notice: Browser blocked external tab forwarding rules."); }
@@ -651,21 +651,37 @@ async function loadAIInsights() {
 function initFormListeners() {
     // Gallery Assets Pushes
     document.getElementById('assetForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData();
-        formData.append('title', document.getElementById('aTitle').value);
-        formData.append('image', document.getElementById('aFile').files[0]);
+    e.preventDefault();
+    const formData = new FormData();
+    const fileInput = document.getElementById('aFile');
+    
+    // Check karein file select hui hai ya nahi
+    if (fileInput.files.length === 0) {
+        return alert("Please select an image first!");
+    }
+    
+    formData.append('title', document.getElementById('aTitle').value);
+    formData.append('image', fileInput.files[0]); // Ensure 'image' key matches Multer (upload.single('image'))
 
-        try {
-            const res = await fetch('/api/manager/upload-gallery', { method: 'POST', body: formData });
-            const data = await res.json();
-            if(data.success) {
-                alert("Ambience structural resource deployed live!");
-                document.getElementById('assetForm').reset();
-                loadGalleryAssets();
-            }
-        } catch (e) { console.error("Upload interface routing exception:", e); }
-    });
+    try {
+        const res = await fetch('/api/manager/upload-gallery', { 
+            method: 'POST', 
+            body: formData 
+        });
+        
+        const data = await res.json();
+        // Check console for success: false
+        console.log("Upload Response:", data); 
+        
+        if(data.success) {
+            alert("Ambience structural resource deployed live!");
+            document.getElementById('assetForm').reset();
+            loadGalleryAssets();
+        } else {
+            alert("Upload failed: " + (data.message || data.error));
+        }
+    } catch (e) { console.error("Upload interface routing exception:", e); }
+});
 
     // Premium Catalog Item Commits
     document.getElementById('menuForm')?.addEventListener('submit', async (e) => {
