@@ -31,12 +31,14 @@ app.use('/uploads', express.static(uploadPath));
 
 // --- DATABASE CONNECTION ---
 // --- DATABASE CONNECTION (Cloud Ready) ---
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'luxedining_db',
-    multipleStatements: true 
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 db.connect(err => {
