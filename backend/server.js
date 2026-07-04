@@ -7,11 +7,11 @@ const cors = require('cors');
 const QRCode = require('qrcode');
 const app = express();
 // Ye line honi chahiye taaki images dikh sakein
-app.use('/uploads', express.static('uploads'));
 
 
 // --- MIDDLEWARE ---
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
