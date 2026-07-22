@@ -29,24 +29,31 @@ app.use(express.static(publicPath));
 app.use('/uploads', express.static(uploadPath));
 
 // --- DATABASE CONNECTION ---
-// --- DATABASE CONNECTION (Cloud Ready) ---
-// --- DATABASE CONNECTION ---
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,      // Render ke 'Environment' section mein ye key set karo
-    user: process.env.DB_USER,      // Wahan se value uthayega
+// --- DATABASE CONNECTION (Cloud Ready with Pool & SSL) ---
+const db = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    multipleStatements: true 
+    port: process.env.DB_PORT || 3306,
+    multipleStatements: true,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
-// db.connect(err => {
-//     if (err) {
-//         console.error("❌ DB CONNECTION FAILED: " + err.message);
-//     } else {
-//         console.log(`🚀 LUXE DINING SERVER LIVE: http://${HOST_IP}:${PORT}`);
-//     }
-// });
-
+// Test connection
+db.getConnection((err, connection) => {
+    if (err) {
+        console.error("❌ DB CONNECTION FAILED: " + err.message);
+    } else {
+        console.log("🚀 CLOUD DATABASE CONNECTED SUCCESSFULLY!");
+        connection.release();
+    }
+});
 // --- STORAGE CONFIG (MULTER) ---
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
