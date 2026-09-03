@@ -7,9 +7,9 @@ const fs = require('fs');
 const cors = require('cors');
 const QRCode = require('qrcode');
 const app = express();
+
 // Ye line honi chahiye taaki images dikh sakein
 app.use('/uploads', express.static('uploads'));
-
 
 // --- MIDDLEWARE ---
 app.use(express.json());
@@ -29,7 +29,6 @@ if (!fs.existsSync(facultyUploadPath)) fs.mkdirSync(facultyUploadPath, { recursi
 app.use(express.static(publicPath));
 app.use('/uploads', express.static(uploadPath));
 
-// --- DATABASE CONNECTION ---
 // --- DATABASE CONNECTION (Cloud Ready with Pool & SSL) ---
 const db = mysql.createPool({
     host: process.env.DB_HOST,
@@ -55,6 +54,7 @@ db.getConnection((err, connection) => {
         connection.release();
     }
 });
+
 // --- STORAGE CONFIG (MULTER) ---
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -89,8 +89,8 @@ app.post('/api/login', (req, res) => {
 app.get('/api/get-gallery', (req, res) => {
     const sql = "SELECT content_url AS url, title AS title FROM cafe_assets ORDER BY id DESC";
     db.query(sql, (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        return res.json(results);
+        if (err) return res.status(500).json([]);
+        return res.json(Array.isArray(results) ? results : []);
     });
 });
 
@@ -140,7 +140,7 @@ app.post('/api/post-review', (req, res) => {
 app.get('/api/get-all-reviews', (req, res) => {
     db.query("SELECT * FROM reviews ORDER BY created_at DESC LIMIT 5", (err, r) => {
         if (err) return res.status(500).json([]);
-        return res.json(r || []);
+        return res.json(Array.isArray(r) ? r : []);
     });
 });
 
@@ -156,7 +156,7 @@ app.post('/api/manager/delete-review', (req, res) => {
 app.get('/api/get-menu', (req, res) => {
     db.query("SELECT * FROM menu ORDER BY category ASC, item_name ASC", (err, r) => {
         if (err) return res.status(500).json([]);
-        return res.json(r || []);
+        return res.json(Array.isArray(r) ? r : []);
     });
 });
 
@@ -212,8 +212,8 @@ app.post('/api/manager/remove-offer', (req, res) => {
 // ==========================================
 app.get('/api/get-faculty', (req, res) => {
     db.query("SELECT * FROM faculty ORDER BY created_at DESC", (err, results) => {
-        if (err) return res.status(500).json({ success: false });
-        return res.json(results || []);
+        if (err) return res.status(500).json([]);
+        return res.json(Array.isArray(results) ? results : []);
     });
 });
 
@@ -247,8 +247,8 @@ app.get('/api/check-status/:booking_id', (req, res) => {
 
 app.get('/api/manager/get-bookings', (req, res) => {
     db.query("SELECT * FROM bookings ORDER BY id DESC", (err, results) => {
-        if (err) return res.status(500).json({ success: false });
-        return res.json(results);
+        if (err) return res.status(500).json([]);
+        return res.json(Array.isArray(results) ? results : []);
     });
 });
 
@@ -268,7 +268,7 @@ app.post('/api/manager/update-booking-status', (req, res) => {
 app.get('/api/get-tables', (req, res) => {
     db.query("SELECT * FROM cafe_tables ORDER BY table_num ASC", (err, r) => {
         if (err) return res.status(500).json([]);
-        return res.json(r || []);
+        return res.json(Array.isArray(r) ? r : []);
     });
 });
 
@@ -285,14 +285,6 @@ app.post('/api/order', (req, res) => {
     db.query("SELECT session_token FROM cafe_tables WHERE table_num = ?", [table], (err, results) => {
         if (err || results.length === 0) {
             return res.status(500).json({ success: false, message: "Verification pipeline failure." });
-        }
-
-        const dbActiveToken = results[0].session_token;
-
-        // MODIFIED: Bypassed rigid expiration check to avoid blocking live user sessions unexpectedly
-        if (dbActiveToken && dbActiveToken !== "BYPASS_ALL" && dbActiveToken !== client_token) {
-            // Uncomment the line below if you want strict validation, currently relaxed to prevent drops
-            // return res.status(403).json({ success: false, message: "Access Denied! QR Parameters expired." });
         }
 
         let values = [];
@@ -332,11 +324,10 @@ app.get('/api/get-bill/:table', (req, res) => {
     db.query(sql, [tableNum], (err, items) => {
         if (err) return res.status(500).json({ success: false, error: err.message });
         let subtotal = items?.reduce((s, i) => s + parseFloat(i.item_total), 0) || 0;
-        return res.json({ success: true, items, subtotal, table: tableNum });
+        return res.json({ success: true, items: Array.isArray(items) ? items : [], subtotal, table: tableNum });
     });
 });
 
-// MANAGER SIDE FLUSH ENGINE (No Third Table Required, Invalidates Token)
 app.post('/api/manager/mark-paid', (req, res) => {
     const { table_num } = req.body;
     
@@ -399,7 +390,7 @@ app.get('/api/manager/notifications', (req, res) => {
             const readIds = r.map(n => n.id);
             db.query("UPDATE notifications SET is_read = 1 WHERE id IN (?)", [readIds], () => {});
         }
-        return res.json(r || []);
+        return res.json(Array.isArray(r) ? r : []);
     });
 });
 
@@ -410,7 +401,7 @@ app.post('/api/manager/clear-notification', (req, res) => {
 });
 
 // ==========================================
-// 9. DYNAMIC QR GENERATOR (Creates unique token per loop)
+// 9. DYNAMIC QR GENERATOR
 // ==========================================
 app.get('/api/manager/generate-qr/:table', async (req, res) => {
     const tableNum = req.params.table;
@@ -430,26 +421,22 @@ app.get('/api/manager/generate-qr/:table', async (req, res) => {
 });
 
 // ==========================================
-// 10. orders
+// 10. ORDERS
 // ==========================================
 app.get('/api/manager/get-live-orders', (req, res) => {
     const sql = "SELECT table_num, GROUP_CONCAT(item_name SEPARATOR ', ') as items FROM orders WHERE order_status = 'Pending' GROUP BY table_num";
     
     db.query(sql, (err, results) => {
         if (err) {
-            console.error("❌ ERROR IN get-live-orders:", err.message); // Yahan terminal mein error dikhega
-            return res.status(500).json({ error: err.message });
+            console.error("❌ ERROR IN get-live-orders:", err.message);
+            return res.status(500).json([]);
         }
-        res.json(results || []);
+        return res.json(Array.isArray(results) ? results : []);
     });
 });
 
-// // 1. Order ko SERVED mark karne ke liye (Table status touch nahi hoga)
-// Ye route tumhare server.js mein aisa dikhna chahiye:
 app.post('/api/manager/mark-served', (req, res) => {
     const { table_num } = req.body;
-    
-    // SIRF ORDERS UPDATE HONGE, TABLES WALI TABLE TOUCH NAHI HOGI
     const sql = "UPDATE orders SET order_status = 'Served' WHERE table_num = ? AND order_status = 'Pending'";
     
     db.query(sql, [table_num], (err) => {
@@ -458,11 +445,8 @@ app.post('/api/manager/mark-served', (req, res) => {
     });
 });
 
-// 2. Order ko DELETE/CLEAR karne ke liye (Database se entry hat jayegi)
 app.post('/api/manager/delete-order', (req, res) => {
     const { table_num } = req.body;
-    
-    // Ye entry ko database se delete kar dega
     const sql = "DELETE FROM orders WHERE table_num = ? AND order_status = 'Served'";
     
     db.query(sql, [table_num], (err) => {
@@ -475,7 +459,7 @@ app.post('/api/manager/delete-order', (req, res) => {
 });
 
 // ==========================================
-// 11. AI INSIGHTS FALLBACK
+// 11. AI INSIGHTS & REPORTS
 // ==========================================
 app.get('/api/manager/ai-insights', (req, res) => {
     return res.json({
@@ -486,24 +470,20 @@ app.get('/api/manager/ai-insights', (req, res) => {
     });
 });
 
-// display daily
-
-// server.
-// server.js mein is route ko update karein
 app.get('/api/manager/daily-report', (req, res) => {
-    // Yahan 'created_at' ki jagah wo naam likhein jo aapke database mein hai
     const sql = "SELECT table_num, total_amount, order_date FROM orders WHERE DATE(order_date) = CURDATE()";
     
     db.query(sql, (err, results) => {
         if (err) {
             console.error("SQL Error:", err);
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json([]);
         }
-        res.json(results);
+        return res.json(Array.isArray(results) ? results : []);
     });
 });
+
 // ==========================================
-// 12. ROUTING & SERVER BOOT
+// 12. ROUTING & SERVER BOOT (PROTECTED MANAGER GUARD)
 // ==========================================
 app.get('/', (req, res) => {
     return res.sendFile(path.join(publicPath, 'index.html'));
@@ -512,9 +492,15 @@ app.get('/', (req, res) => {
 app.get('/:page', (req, res) => {
     const page = req.params.page;
     if (page === "favicon.ico") return res.status(204);
+
+    // SECURITY GUARD: Agar koi bina login direct manager file access karega, toh home/login par bhej denge
+    if (page.toLowerCase().includes('manager')) {
+        return res.sendFile(path.join(publicPath, 'index.html'));
+    }
+
     const filePath = path.join(publicPath, page.endsWith('.html') ? page : `${page}.html`);
     return res.sendFile(fs.existsSync(filePath) ? filePath : path.join(publicPath, 'index.html'));
 });
+
 const PORT = process.env.PORT || 3000;
-// naya:
 app.listen(PORT, '0.0.0.0', () => console.log(`🔥 LUXE SYSTEM ONLINE ON PORT ${PORT}`));
